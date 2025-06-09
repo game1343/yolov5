@@ -260,6 +260,7 @@ while True:
             PressKey(W)
             PressKey(SHIFT)
     else:
+        press_key_e()
         ReleaseKey(W)
         ReleaseKey(A)
         ReleaseKey(D)
