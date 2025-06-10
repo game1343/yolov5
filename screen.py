@@ -144,7 +144,7 @@ def get_game_screen():
     width, height = window.width, window.height
 
     # กำหนดให้ตัดด้านบน 20% ของภาพ
-    crop_top_percent = 0.2
+    crop_top_percent = 0.3
     crop_top = int(height * crop_top_percent)
     cropped_height = height - crop_top
 
