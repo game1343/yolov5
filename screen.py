@@ -126,7 +126,7 @@ window_title = "FiveM® by Cfx.re - WHAT UNIVERSAL Sponsored by [ HOSTIFY ]"
 
 
 cv2.namedWindow("Rock Detector", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("Rock Detector", 640, 360)
+cv2.resizeWindow("Rock Detector", 320, 240)
 cv2.setWindowProperty("Rock Detector", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
 
 def press_key_e():
@@ -226,11 +226,11 @@ while True:
         ReleaseKey(D)
         ReleaseKey(SHIFT)
 
-        if offset_x > 250:
+        if offset_x > 200:
             PressKey(D)
             PressKey(W)
             PressKey(SHIFT)
-        elif offset_x < -250:
+        elif offset_x < -200:
             PressKey(A)
             PressKey(W)
             PressKey(SHIFT)
@@ -238,7 +238,9 @@ while True:
             PressKey(W)
             PressKey(SHIFT)
     else:
-        press_key_e()
+        for _ in range(5):   # สแปมกดปุ่ม E 5 ครั้ง
+            press_key_e()
+            time.sleep(0.1)
         ReleaseKey(W)
         ReleaseKey(A)
         ReleaseKey(D)
@@ -251,7 +253,7 @@ while True:
         ReleaseKey(SHIFT)
 
     # แสดงผลภาพ
-    small_frame = cv2.resize(frame, (640, 360))
+    small_frame = cv2.resize(frame, (320, 240))
     cv2.imshow("Rock Detector", small_frame)
     set_always_on_top("Rock Detector")
 
