@@ -226,11 +226,11 @@ while True:
         ReleaseKey(D)
         ReleaseKey(SHIFT)
 
-        if offset_x > 200:
+        if offset_x > 250:
             PressKey(D)
             PressKey(W)
             PressKey(SHIFT)
-        elif offset_x < -200:
+        elif offset_x < -250:
             PressKey(A)
             PressKey(W)
             PressKey(SHIFT)
@@ -238,9 +238,9 @@ while True:
             PressKey(W)
             PressKey(SHIFT)
     else:
-        for _ in range(5):   # สแปมกดปุ่ม E 5 ครั้ง
-            press_key_e()
-            time.sleep(0.1)
+        # for _ in range(5):   # สแปมกดปุ่ม E 5 ครั้ง
+        #     press_key_e()
+        #     time.sleep(0.1)
         ReleaseKey(W)
         ReleaseKey(A)
         ReleaseKey(D)
