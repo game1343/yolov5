@@ -134,6 +134,8 @@ def press_key_e():
     time.sleep(0.1)
     ReleaseKey(E)
 
+
+
 def get_game_screen():
     windows = gw.getWindowsWithTitle(window_title)
     if not windows:
@@ -160,6 +162,18 @@ lock_duration = 10.0
 last_lock_time = None
 locked_rock = None
 is_running = False
+
+def keep_pressing_e():
+    global is_running
+    while True:
+        if is_running:
+            press_key_e()
+            time.sleep(0.1)  # กด E ทุก 1 วินาที (ปรับได้)
+        else:
+            time.sleep(0.1)
+
+e_thread = threading.Thread(target=keep_pressing_e, daemon=True)
+e_thread.start()
 
 while True:
     if not is_running:
@@ -219,18 +233,18 @@ while True:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
         offset_x = mid_x - center_x
         offset_y = mid_y - center_y
-        press_key_e()
+        
 
         ReleaseKey(W)
         ReleaseKey(A)
         ReleaseKey(D)
         ReleaseKey(SHIFT)
 
-        if offset_x > 250:
+        if offset_x > 230:
             PressKey(D)
             PressKey(W)
             PressKey(SHIFT)
-        elif offset_x < -250:
+        elif offset_x < -230:
             PressKey(A)
             PressKey(W)
             PressKey(SHIFT)
@@ -238,9 +252,6 @@ while True:
             PressKey(W)
             PressKey(SHIFT)
     else:
-        # for _ in range(5):   # สแปมกดปุ่ม E 5 ครั้ง
-        #     press_key_e()
-        #     time.sleep(0.1)
         ReleaseKey(W)
         ReleaseKey(A)
         ReleaseKey(D)
