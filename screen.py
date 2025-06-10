@@ -8,19 +8,31 @@ import ctypes
 import win32gui
 import win32con
 from ctypes import wintypes
-import pyautogui
-import win32api
 import keyboard
 import threading
 
+# try:
+#     window = gw.getWindowsWithTitle("FiveM")[0]
+#     window.activate()
+#     print("✔ FiveM ถูกดึงมาอยู่หน้าสุดแล้ว")
+#     time.sleep(1)
+# except IndexError:
+#     print("❌ ไม่พบหน้าต่างชื่อ 'FiveM' กรุณาเปิดเกมก่อน")
+#     exit()
+
 try:
     window = gw.getWindowsWithTitle("FiveM")[0]
-    window.activate()
+    hwnd = window._hWnd
+    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+    win32gui.SetForegroundWindow(hwnd)
     print("✔ FiveM ถูกดึงมาอยู่หน้าสุดแล้ว")
     time.sleep(1)
 except IndexError:
     print("❌ ไม่พบหน้าต่างชื่อ 'FiveM' กรุณาเปิดเกมก่อน")
     exit()
+except Exception as e:
+    print("❌ ไม่สามารถตั้งหน้าต่างเป็นหน้าสุดได้:", e)
+
 
 # --- โค้ดส่งคีย์ (ใช้ scan code) ---
 SendInput = ctypes.windll.user32.SendInput
@@ -114,27 +126,13 @@ window_title = "FiveM® by Cfx.re - WHAT UNIVERSAL Sponsored by [ HOSTIFY ]"
 
 
 cv2.namedWindow("Rock Detector", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("Rock Detector", 640, 360)
+cv2.setWindowProperty("Rock Detector", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
 
 def press_key_e():
     PressKey(E)
     time.sleep(0.1)
     ReleaseKey(E)
-
-# def get_game_screen():
-#     windows = gw.getWindowsWithTitle(window_title)
-#     if not windows:
-#         print("ไม่พบหน้าต่างเกม")
-#         return None, None
-#     window = windows[0]
-#     left, top = window.left, window.top
-#     width, height = window.width, window.height
-#     cropped_height = int(height * 0.8)
-#     with mss.mss() as sct:
-#         monitor = {"top": top, "left": left, "width": width, "height": height}
-#         sct_img = sct.grab(monitor)
-#         frame = np.array(sct_img)
-#         frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-#         return frame, (left, top, width, height)
 
 def get_game_screen():
     windows = gw.getWindowsWithTitle(window_title)
@@ -170,14 +168,15 @@ while True:
 
     frame, region = get_game_screen()
     if frame is None:
+        print("can't find screen")
         time.sleep(1)
         continue
+    print("Frame shape:", frame.shape)
 
     results = model(frame)
 
     rocks = []
     center_x = frame.shape[1] // 2
-    # center_y = frame.shape[0] // 2
     center_y = int(frame.shape[0] * 0.85)
 
     for *box, conf, cls in results.xyxy[0]:
@@ -189,53 +188,33 @@ while True:
 
     current_time = time.time()
 
-    if locked_rock:
-        # ตรวจสอบว่าหินเดิมยังอยู่หรือไม่ (ในระยะ 30 พิกเซล)
-        still_exists = False
-        for rock in rocks:
-            lx1, ly1, lx2, ly2, lconf, lcls, ldist, lmx, lmy = locked_rock
-            x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y = rock
-            if cls_id == lcls and abs(mid_x - lmx) < 30 and abs(mid_y - lmy) < 30:
-                locked_rock = rock  # อัปเดตตำแหน่งหินเดิม
-                still_exists = True
-                break
-        
-        if still_exists:
-            # ถ้าเกิน 10 วินาทีแล้ว ให้ล้างล็อก เพื่อจะได้เลือกหินใหม่ในรอบถัดไป
-            if last_lock_time and (current_time - last_lock_time > lock_duration):
-                locked_rock = None
-                last_lock_time = None
-        else:
-            # หินหายไปก่อนครบเวลา ให้ล้างล็อกทันที
-            locked_rock = None
-            last_lock_time = None
-
-    if not locked_rock and rocks:
+    # เลือกหินที่ใกล้ที่สุด (ความยาวเส้นสั้นสุด)
+    if rocks:
         locked_rock = min(rocks, key=lambda r: r[6])
         last_lock_time = current_time
+    else:
+        locked_rock = None
+        last_lock_time = None
 
-    # ... ส่วนโค้ดที่เหลือไม่เปลี่ยน ...
-
-
-    # --- วาดกรอบหินทั้งหมดที่เจอ
+    # วาดกรอบหินและเส้นลากไปหาหินทุกก้อน
     for (x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y) in rocks:
         color = (0, 255, 0) if locked_rock and (x1, y1, x2, y2) == locked_rock[:4] else (255, 0, 0)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         label = f"Rock {conf:.2f}"
         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        # วาดเส้นลากจากจุดกึ่งกลางไปหาหินทุกก้อน
+        cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 1)
 
-    # --- วาดจุดกึ่งกลางจอ (สีแดง)
+    # วาดจุดกึ่งกลางจอ (สีแดง)
     cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
 
-    # --- วาดเส้นหรือทิศทางการเดินไปหาหินที่ล็อก
+    # วาดเส้นเส้นหนาและจุดกึ่งกลางหินที่เลือก (locked_rock)
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
-        cv2.circle(frame, (mid_x, mid_y), 5, (0, 255, 255), -1)
-        cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 2)
-        # วาดลูกศรหัวเส้น (ง่ายๆ) 
-        # (อาจจะเพิ่มลูกศรสวยๆได้อีก แต่ขอแบบนี้ก่อน)
+        cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
+        cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
 
-    # --- คำสั่งเดิน (เหมือนเดิม) ---
+    # คำสั่งเดินไปหาหินที่เลือก (เหมือนเดิม)
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
         offset_x = mid_x - center_x
@@ -247,7 +226,6 @@ while True:
         ReleaseKey(D)
         ReleaseKey(SHIFT)
 
-        
         if offset_x > 250:
             PressKey(D)
             PressKey(W)
@@ -272,28 +250,150 @@ while True:
         ReleaseKey(D)
         ReleaseKey(SHIFT)
 
-        # time.sleep(2)
-        
-        # time.sleep(0.3)
-        # ReleaseKey(C)
-        # time.sleep(5)
-        # move_mouse(10, 0)
-
-
-        # ถ้าไม่เจอหิน ปล่อยคีย์ทั้งหมด (ผมแก้เป็น Release แทน Press)
-        
-
-    # --- แสดงผลภาพพร้อมกรอบและเส้น ---
-    # height = frame.shape[0]
-    # cut_top = int(height * 0.2)
-    # cropped_frame = frame[cut_top:, :, :]
+    # แสดงผลภาพ
     small_frame = cv2.resize(frame, (640, 360))
     cv2.imshow("Rock Detector", small_frame)
     set_always_on_top("Rock Detector")
-    # กด 'q' เพื่อออกจากลูป
+
     key = cv2.waitKey(1) & 0xFF
-    if key == 27 or key == ord('q'):  # 27 คือ ESC key
+    if key == 27 or key == ord('q'):
         print("ปิดโปรแกรมโดยผู้ใช้")
         break
 
 cv2.destroyAllWindows()
+
+
+# while True:
+#     if not is_running:
+#         time.sleep(0.1)
+#         continue
+
+#     frame, region = get_game_screen()
+#     if frame is None:
+#         time.sleep(1)
+#         continue
+
+#     results = model(frame)
+
+#     rocks = []
+#     center_x = frame.shape[1] // 2
+#     # center_y = frame.shape[0] // 2
+#     center_y = int(frame.shape[0] * 0.85)
+
+#     for *box, conf, cls in results.xyxy[0]:
+#         x1, y1, x2, y2 = map(int, box)
+#         mid_x = (x1 + x2) // 2
+#         mid_y = (y1 + y2) // 2
+#         dist = ((mid_x - center_x)**2 + (mid_y - center_y)**2) ** 0.5
+#         rocks.append((x1, y1, x2, y2, conf, int(cls), dist, mid_x, mid_y))
+
+#     current_time = time.time()
+
+#     if locked_rock:
+#         # ตรวจสอบว่าหินเดิมยังอยู่หรือไม่ (ในระยะ 30 พิกเซล)
+#         still_exists = False
+#         for rock in rocks:
+#             lx1, ly1, lx2, ly2, lconf, lcls, ldist, lmx, lmy = locked_rock
+#             x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y = rock
+#             if cls_id == lcls and abs(mid_x - lmx) < 30 and abs(mid_y - lmy) < 30:
+#                 locked_rock = rock  # อัปเดตตำแหน่งหินเดิม
+#                 still_exists = True
+#                 break
+        
+#         if still_exists:
+#             # ถ้าเกิน 10 วินาทีแล้ว ให้ล้างล็อก เพื่อจะได้เลือกหินใหม่ในรอบถัดไป
+#             if last_lock_time and (current_time - last_lock_time > lock_duration):
+#                 locked_rock = None
+#                 last_lock_time = None
+#         else:
+#             # หินหายไปก่อนครบเวลา ให้ล้างล็อกทันที
+#             locked_rock = None
+#             last_lock_time = None
+
+#     if not locked_rock and rocks:
+#         locked_rock = min(rocks, key=lambda r: r[6])
+#         last_lock_time = current_time
+
+#     # ... ส่วนโค้ดที่เหลือไม่เปลี่ยน ...
+
+
+#     # --- วาดกรอบหินทั้งหมดที่เจอ
+#     for (x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y) in rocks:
+#         color = (0, 255, 0) if locked_rock and (x1, y1, x2, y2) == locked_rock[:4] else (255, 0, 0)
+#         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+#         label = f"Rock {conf:.2f}"
+#         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+#     # --- วาดจุดกึ่งกลางจอ (สีแดง)
+#     cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
+
+#     # --- วาดเส้นหรือทิศทางการเดินไปหาหินที่ล็อก
+#     if locked_rock:
+#         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
+#         cv2.circle(frame, (mid_x, mid_y), 5, (0, 255, 255), -1)
+#         cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 2)
+#         # วาดลูกศรหัวเส้น (ง่ายๆ) 
+#         # (อาจจะเพิ่มลูกศรสวยๆได้อีก แต่ขอแบบนี้ก่อน)
+
+#     # --- คำสั่งเดิน (เหมือนเดิม) ---
+#     if locked_rock:
+#         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
+#         offset_x = mid_x - center_x
+#         offset_y = mid_y - center_y
+#         press_key_e()
+
+#         ReleaseKey(W)
+#         ReleaseKey(A)
+#         ReleaseKey(D)
+#         ReleaseKey(SHIFT)
+
+        
+#         if offset_x > 250:
+#             PressKey(D)
+#             PressKey(W)
+#             PressKey(SHIFT)
+#         elif offset_x < -250:
+#             PressKey(A)
+#             PressKey(W)
+#             PressKey(SHIFT)
+#         else:
+#             PressKey(W)
+#             PressKey(SHIFT)
+#     else:
+#         press_key_e()
+#         ReleaseKey(W)
+#         ReleaseKey(A)
+#         ReleaseKey(D)
+#         ReleaseKey(SHIFT)
+#         time.sleep(0.5)
+#         PressKey(D)
+#         PressKey(SHIFT)
+#         time.sleep(2)
+#         ReleaseKey(D)
+#         ReleaseKey(SHIFT)
+
+#         # time.sleep(2)
+        
+#         # time.sleep(0.3)
+#         # ReleaseKey(C)
+#         # time.sleep(5)
+#         # move_mouse(10, 0)
+
+
+#         # ถ้าไม่เจอหิน ปล่อยคีย์ทั้งหมด (ผมแก้เป็น Release แทน Press)
+        
+
+#     # --- แสดงผลภาพพร้อมกรอบและเส้น ---
+#     # height = frame.shape[0]
+#     # cut_top = int(height * 0.2)
+#     # cropped_frame = frame[cut_top:, :, :]
+#     small_frame = cv2.resize(frame, (640, 360))
+#     cv2.imshow("Rock Detector", small_frame)
+#     set_always_on_top("Rock Detector")
+#     # กด 'q' เพื่อออกจากลูป
+#     key = cv2.waitKey(1) & 0xFF
+#     if key == 27 or key == ord('q'):  # 27 คือ ESC key
+#         print("ปิดโปรแกรมโดยผู้ใช้")
+#         break
+
+# cv2.destroyAllWindows()
