@@ -258,9 +258,11 @@ while True:
         ReleaseKey(SHIFT)
         time.sleep(0.5)
         PressKey(D)
+        PressKey(S)
         PressKey(SHIFT)
-        time.sleep(2)
+        time.sleep(1)
         ReleaseKey(D)
+        ReleaseKey(S)
         ReleaseKey(SHIFT)
 
     # แสดงผลภาพ
