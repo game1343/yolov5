@@ -260,7 +260,7 @@ while True:
         PressKey(D)
         PressKey(S)
         PressKey(SHIFT)
-        time.sleep(1.5)
+        time.sleep(1.25)
         ReleaseKey(D)
         ReleaseKey(S)
         ReleaseKey(SHIFT)
