@@ -214,8 +214,10 @@ while True:
     alert_crop = frame[y_min:y_max, x_min:x_max]  # พื้นที่เฉพาะที่ UI เตือนจะอยู่
     resultModelx = modelx(alert_crop[:, :, ::-1])
     detections = resultModelx.xyxy[0].cpu().numpy()
+    cv2.imshow("Alert", alert_crop)
+    set_always_on_top("Alert")
 
-    alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.75 for *_, conf, _ in detections)
 
     if alert_detected:
         print("🔴 พบการแจ้งเตือนในหน้าจอ (modelx)")
@@ -249,7 +251,7 @@ while True:
         pydirectinput.click()
         pydirectinput.press('esc')
         pydirectinput.press('f5')
-        pyautogui.screenshot('zone_debug.png', region=(808, 310, 900, 600))
+        # pyautogui.screenshot('zone_debug.png', region=(808, 310, 900, 600))
         continue
 
     results = model(frame)
