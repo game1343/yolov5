@@ -226,7 +226,11 @@ while True:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     # แสดงผลลัพธ์หลังวาด
-    cv2.imshow("ผลตรวจจับแจ้งเตือน (modelx)", alert_crop)
+    cv2.imshow("modelx", alert_crop)
+    set_always_on_top("modelx")
+
+
+
 
     alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
 
