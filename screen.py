@@ -217,7 +217,7 @@ while True:
     cv2.imshow("Alert", alert_crop)
     set_always_on_top("Alert")
 
-    alert_detected = any(conf > 0.75 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
 
     if alert_detected:
         print("🔴 พบการแจ้งเตือนในหน้าจอ (modelx)")
