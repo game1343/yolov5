@@ -214,8 +214,19 @@ while True:
     alert_crop = frame[y_min:y_max, x_min:x_max]  # พื้นที่เฉพาะที่ UI เตือนจะอยู่
     resultModelx = modelx(alert_crop[:, :, ::-1])
     detections = resultModelx.xyxy[0].cpu().numpy()
-    cv2.imshow("Alert", alert_crop)
-    set_always_on_top("Alert")
+    for *box, conf, cls_id in detections:
+        x1, y1, x2, y2 = map(int, box)
+    label = f"{modelx.names[int(cls_id)]} {conf:.2f}"
+    
+    # วาดกรอบ
+    cv2.rectangle(alert_crop, (x1, y1), (x2, y2), (0, 0, 255), 2)
+    
+    # วาดข้อความ
+    cv2.putText(alert_crop, label, (x1, y1 - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+    # แสดงผลลัพธ์หลังวาด
+    cv2.imshow("ผลตรวจจับแจ้งเตือน (modelx)", alert_crop)
 
     alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
 
