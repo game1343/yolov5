@@ -112,7 +112,7 @@ def ReleaseKey(hexKeyCode):
 
 # --- โหลดโมเดล YOLO ---
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/rock-detect2/weights/best.pt')
-modelx = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/full_alert_model2/weights/best.pt')
+modelx = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/full_alert_model4/weights/best.pt')
 
 def set_always_on_top(window_name):
     hwnd = win32gui.FindWindow(None, window_name)
@@ -154,7 +154,6 @@ def get_game_screen():
         sct_img = sct.grab(monitor)
         frame = np.array(sct_img)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-        framex = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
         return frame, (left, top + crop_top, width, cropped_height)
 
 
@@ -199,7 +198,7 @@ selfname = f"scrap{item_name}.png"
 print(selfname)
 
 x_min, y_min = 10, 680 
-x_max, y_max = 300, 750 
+x_max, y_max = 300, 730
 
 while True:
     if not is_running:
@@ -213,24 +212,20 @@ while True:
         continue
     alert_crop = frame[y_min:y_max, x_min:x_max]  # พื้นที่เฉพาะที่ UI เตือนจะอยู่
     resultModelx = modelx(alert_crop[:, :, ::-1])
-    detections = resultModelx.xyxy[0].cpu().numpy()
+    detections = resultModelx.xyxy[0]
     for *box, conf, cls_id in detections:
+        if conf < 0.5:  
+            continue
         x1, y1, x2, y2 = map(int, box)
-    label = f"{modelx.names[int(cls_id)]} {conf:.2f}"
-    
-    # วาดกรอบ
-    cv2.rectangle(alert_crop, (x1, y1), (x2, y2), (0, 0, 255), 2)
-    
-    # วาดข้อความ
-    cv2.putText(alert_crop, label, (x1, y1 - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-    # แสดงผลลัพธ์หลังวาด
+        label = f"{modelx.names[int(cls_id)]} {conf:.2f}"
+        # วาดกรอบ
+        cv2.rectangle(alert_crop, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        # วาดข้อความ
+        cv2.putText(alert_crop, label, (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        # แสดงผลลัพธ์หลังวาด
     cv2.imshow("modelx", alert_crop)
     set_always_on_top("modelx")
-
-
-
 
     alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
 
@@ -252,7 +247,7 @@ while True:
         pydirectinput.moveTo(589, 474)
         pydirectinput.click()
         pydirectinput.click()
-        time.sleep(3)
+        time.sleep(4)
         location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
         center = pyautogui.center(location)
         pyautogui.moveTo(center.x, center.y)
@@ -296,6 +291,8 @@ while True:
 
     # วาดกรอบหินและเส้นลากไปหาหินทุกก้อน
     for (x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y) in rocks:
+        if conf < 0.5:  # กรอง confidence ต่ำกว่า 0.5 ทิ้ง
+            continue
         color = (0, 255, 0) if locked_rock and (x1, y1, x2, y2) == locked_rock[:4] else (255, 0, 0)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         label = f"Rock {conf:.2f}"

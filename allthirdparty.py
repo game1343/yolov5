@@ -10,6 +10,7 @@ import pyautogui
 import pydirectinput
 import tkinter as tk
 from tkinter import simpledialog
+import keyboard
 
 # โหลดโมเดล
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/procopper2/weights/best.pt')
@@ -76,6 +77,16 @@ def tap_key(hexKeyCode):
     time.sleep(0.05)
     release_key(hexKeyCode)
 
+def start_scanning(event=None):
+    global scanning
+    scanning = True
+    print("✅ เริ่มการสแกน")
+
+def stop_scanning(event=None):
+    global scanning
+    scanning = False
+    print("🛑 หยุดการสแกน")
+
 # ตัวแปรตรวจสอบ
 yolo_detected = True
 
@@ -102,11 +113,15 @@ carname = f"{item_name}.png"
 selfname = f"scrap{item_name}.png"
 
 # ใช้ filename ใน locateOnScreen()
-
-
+scanning = False
+keyboard.add_hotkey('f5', lambda: start_scanning())
+keyboard.add_hotkey('f6', lambda: stop_scanning())
 with mss.mss() as sct:
     while True:
         try:
+            if not scanning:
+                time.sleep(0.1)
+                continue
             hwnd = win32gui.FindWindow(None, window_title)
             if hwnd == 0:
                 print("ไม่พบหน้าต่างเกม")
@@ -137,11 +152,25 @@ with mss.mss() as sct:
                 pydirectinput.click()
                 pydirectinput.click()
                 time.sleep(3)
+                location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 500))
+                center = pyautogui.center(location)
+                pyautogui.moveTo(center.x, center.y)
+                pydirectinput.mouseDown()
+                time.sleep(0.2)
+                pydirectinput.moveTo(561, 574)
+                pydirectinput.mouseUp()
+                time.sleep(0.05)
+                pydirectinput.moveTo(1032, 594)
+                pydirectinput.click()
+                time.sleep(0.05)
+                pydirectinput.moveTo(952, 646)
+                pydirectinput.click()
+                time.sleep(0.05)
                 location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(349, 307, 500, 450))
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center.x, center.y)
                 pydirectinput.mouseDown()
-                time.sleep(0.1)
+                time.sleep(0.2)
                 pydirectinput.moveTo(1179, 571)
                 pydirectinput.mouseUp()
                 time.sleep(0.1)
@@ -151,20 +180,10 @@ with mss.mss() as sct:
                 pydirectinput.click()
                 pydirectinput.moveTo(952, 646)
                 pydirectinput.click()
-                location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 500))
-                center = pyautogui.center(location)
-                pyautogui.moveTo(center.x, center.y)
-                pydirectinput.mouseDown()
-                time.sleep(0.1)
-                pydirectinput.moveTo(561, 574)
-                pydirectinput.mouseUp()
-                pydirectinput.moveTo(1032, 594)
-                pydirectinput.click()
-                pydirectinput.moveTo(952, 646)
-                pydirectinput.click()
                 pydirectinput.press('esc')
+                time.sleep(0.05)
                 pydirectinput.press('e')
-                time.sleep(0.5)
+                time.sleep(1)
                 pydirectinput.moveTo(899, 639)
                 pydirectinput.click()
                 time.sleep(0.5)
