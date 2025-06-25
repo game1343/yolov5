@@ -260,13 +260,18 @@ while True:
         pydirectinput.click()
         pydirectinput.click()
         time.sleep(4)
-        location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
-        if location is None:
-            print(f"❌ ไม่พบภาพ {selfname} - ข้ามการทำงานรอบนี้")
-            is_running = False
-            continue  # หรือ return ถ้าอยู่ในฟังก์ชัน
-        else:
+        try:
+            location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
+            if location is None:
+                print(f"❌ ไม่พบภาพ {selfname} แม้จะลด confidence")
+                # pyautogui.screenshot("debug_area.png", region=(808, 310, 900, 600))
+                is_running = False
+                continue
             center = pyautogui.center(location)
+        except Exception as e:
+            print(f"❌ เกิดข้อผิดพลาด locateOnScreen: {e}")
+            # pyautogui.screenshot("debug_error.png", region=(808, 310, 900, 600))
+            continue
         pyautogui.moveTo(center.x, center.y)
         pydirectinput.mouseDown()
         time.sleep(0.2)
