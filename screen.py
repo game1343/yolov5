@@ -258,6 +258,11 @@ while True:
         pydirectinput.press('h')
         pydirectinput.moveTo(589, 474)
         pydirectinput.click()
+        time.sleep(0.2)
+        pydirectinput.click()
+        time.sleep(0.2)
+        pydirectinput.click()
+        time.sleep(0.2)
         pydirectinput.click()
         time.sleep(4)
         try:
@@ -270,6 +275,8 @@ while True:
             center = pyautogui.center(location)
         except Exception as e:
             print(f"❌ เกิดข้อผิดพลาด locateOnScreen: {e}")
+            time.sleep(1)
+            pydirectinput.press('f5')
             # pyautogui.screenshot("debug_error.png", region=(808, 310, 900, 600))
             continue
         pyautogui.moveTo(center.x, center.y)
