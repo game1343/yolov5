@@ -259,7 +259,7 @@ while True:
         pydirectinput.moveTo(589, 474)
         pydirectinput.click()
         pydirectinput.click()
-        time.sleep(3)
+        time.sleep(4)
         location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
         center = pyautogui.center(location)
         pyautogui.moveTo(center.x, center.y)
