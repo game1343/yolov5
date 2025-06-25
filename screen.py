@@ -124,9 +124,9 @@ def set_always_on_top(window_name):
 window_title = "FiveM® by Cfx.re - WHAT UNIVERSAL Sponsored by [ HOSTIFY ]"
 
 
-cv2.namedWindow("Rock Detector", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("Rock Detector", 320, 240)
-cv2.setWindowProperty("Rock Detector", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
+# cv2.namedWindow("Rock Detector", cv2.WINDOW_NORMAL)
+# cv2.resizeWindow("Rock Detector", 320, 240)
+# cv2.setWindowProperty("Rock Detector", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
 
 def press_key_e():
     PressKey(E)
@@ -261,12 +261,18 @@ while True:
         pydirectinput.click()
         time.sleep(4)
         location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
-        center = pyautogui.center(location)
+        if location is None:
+            print(f"❌ ไม่พบภาพ {selfname} - ข้ามการทำงานรอบนี้")
+            is_running = False
+            continue  # หรือ return ถ้าอยู่ในฟังก์ชัน
+        else:
+            center = pyautogui.center(location)
         pyautogui.moveTo(center.x, center.y)
         pydirectinput.mouseDown()
-        time.sleep(0.1)
+        time.sleep(0.2)
         pydirectinput.moveTo(561, 574)
         pydirectinput.mouseUp()
+        time.sleep(0.2)
         pydirectinput.moveTo(1032, 594)
         pydirectinput.click()
         pydirectinput.moveTo(952, 646)
@@ -279,7 +285,7 @@ while True:
     results = model(frame)
     detections = results.xyxy[0]
 
-    alert_detected = any(conf > 0.6 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
 
     rocks = []
     center_x = frame.shape[1] // 2
