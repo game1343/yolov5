@@ -112,7 +112,7 @@ def ReleaseKey(hexKeyCode):
 
 # --- โหลดโมเดล YOLO ---
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/rock-detect2/weights/best.pt')
-modelx = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/full_alert_model4/weights/best.pt')
+modelx = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/full_alert_model5/weights/best.pt')
 
 def set_always_on_top(window_name):
     hwnd = win32gui.FindWindow(None, window_name)
@@ -197,8 +197,20 @@ item_name = item  # หรือ "Copper" หรือ "Iron"
 selfname = f"scrap{item_name}.png"
 print(selfname)
 
+def choose_and_update_item():
+    global item_name, selfname
+    item = choose_item()
+    if item:
+        item_name = item
+        selfname = f"scrap{item_name}.png"
+        print(f"✅ เปลี่ยนไอเทมเป็น: {selfname}")
+    else:
+        print("❌ ไม่ได้เปลี่ยนไอเทม")
+
+keyboard.add_hotkey('f10', choose_and_update_item)
+
 x_min, y_min = 10, 680 
-x_max, y_max = 300, 730
+x_max, y_max = 300, 750
 
 while True:
     if not is_running:
@@ -214,8 +226,8 @@ while True:
     resultModelx = modelx(alert_crop[:, :, ::-1])
     detections = resultModelx.xyxy[0]
     for *box, conf, cls_id in detections:
-        if conf < 0.5:  
-            continue
+        # if conf < 0.5:  
+        #     continue
         x1, y1, x2, y2 = map(int, box)
         label = f"{modelx.names[int(cls_id)]} {conf:.2f}"
         # วาดกรอบ
@@ -224,10 +236,10 @@ while True:
         cv2.putText(alert_crop, label, (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         # แสดงผลลัพธ์หลังวาด
-    cv2.imshow("modelx", alert_crop)
-    set_always_on_top("modelx")
+    # cv2.imshow("modelx", alert_crop)
+    # set_always_on_top("modelx")
 
-    alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.3 for *_, conf, _ in detections)
 
     if alert_detected:
         print("🔴 พบการแจ้งเตือนในหน้าจอ (modelx)")
@@ -247,7 +259,7 @@ while True:
         pydirectinput.moveTo(589, 474)
         pydirectinput.click()
         pydirectinput.click()
-        time.sleep(4)
+        time.sleep(3)
         location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
         center = pyautogui.center(location)
         pyautogui.moveTo(center.x, center.y)
@@ -265,61 +277,53 @@ while True:
         continue
 
     results = model(frame)
+    detections = results.xyxy[0]
+
+    alert_detected = any(conf > 0.6 for *_, conf, _ in detections)
 
     rocks = []
     center_x = frame.shape[1] // 2
     center_y = int(frame.shape[0] * 0.85)
 
-    for *box, conf, cls in results.xyxy[0]:
+    # คัดกรองเฉพาะวัตถุที่มั่นใจเกิน 0.6 แล้วเก็บข้อมูล
+    for *box, conf, cls in detections:
+        # if conf < 0.6:
+        #     continue
         x1, y1, x2, y2 = map(int, box)
         mid_x = (x1 + x2) // 2
         mid_y = (y1 + y2) // 2
         dist = ((mid_x - center_x)**2 + (mid_y - center_y)**2) ** 0.5
         rocks.append((x1, y1, x2, y2, conf, int(cls), dist, mid_x, mid_y))
 
-    current_time = time.time()
+    # เลือกหินที่ใกล้จุดกลางจอที่สุด
+    locked_rock = min(rocks, key=lambda r: r[6]) if rocks else None
 
-    
-
-    # เลือกหินที่ใกล้ที่สุด (ความยาวเส้นสั้นสุด)
-    if rocks:
-        locked_rock = min(rocks, key=lambda r: r[6])
-        last_lock_time = current_time
-    else:
-        locked_rock = None
-        last_lock_time = None
-
-    # วาดกรอบหินและเส้นลากไปหาหินทุกก้อน
+    # วาดกรอบ ตรวจจับ และเส้นลาก
     for (x1, y1, x2, y2, conf, cls_id, dist, mid_x, mid_y) in rocks:
-        if conf < 0.5:  # กรอง confidence ต่ำกว่า 0.5 ทิ้ง
-            continue
         color = (0, 255, 0) if locked_rock and (x1, y1, x2, y2) == locked_rock[:4] else (255, 0, 0)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         label = f"Rock {conf:.2f}"
         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-        # วาดเส้นลากจากจุดกึ่งกลางไปหาหินทุกก้อน
         cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 1)
 
-    # วาดจุดกึ่งกลางจอ (สีแดง)
+    # จุดกึ่งกลางจอ
     cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
 
-    # วาดเส้นเส้นหนาและจุดกึ่งกลางหินที่เลือก (locked_rock)
+    # จุดและเส้นหนาไปยังหินที่ล็อก
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
         cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
         cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
 
+    # ระบบควบคุมทิศทางเคลื่อนไปหาหิน
+    ReleaseKey(W)
+    ReleaseKey(A)
+    ReleaseKey(D)
+    ReleaseKey(SHIFT)
 
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
         offset_x = mid_x - center_x
-        offset_y = mid_y - center_y
-        
-
-        ReleaseKey(W)
-        ReleaseKey(A)
-        ReleaseKey(D)
-        ReleaseKey(SHIFT)
 
         if offset_x > 230:
             PressKey(D)
@@ -333,10 +337,6 @@ while True:
             PressKey(W)
             PressKey(SHIFT)
     else:
-        ReleaseKey(W)
-        ReleaseKey(A)
-        ReleaseKey(D)
-        ReleaseKey(SHIFT)
         time.sleep(0.5)
         PressKey(D)
         PressKey(S)
@@ -346,13 +346,6 @@ while True:
         ReleaseKey(S)
         ReleaseKey(SHIFT)
 
-    small_frame = cv2.resize(frame, (320, 240))
-    cv2.imshow("Rock Detector", small_frame)
-    set_always_on_top("Rock Detector")
-
-    key = cv2.waitKey(1) & 0xFF
-    if key == 27 or key == ord('q'):
-        print("ปิดโปรแกรมโดยผู้ใช้")
-        break
-
-cv2.destroyAllWindows()
+    # small_frame = cv2.resize(frame, (320, 240))
+    # cv2.imshow("Rock Detector", small_frame)
+    # set_always_on_top("Rock Detector")

@@ -94,9 +94,9 @@ def choose_item():
     root = tk.Tk()
     root.withdraw()  # ซ่อนหน้าต่างหลัก
 
-    choices = ["Gold","Copper","Iron"]
+    choices = ["Gold", "Copper", "Iron"]
     choice = simpledialog.askstring("เลือกไอเทม", f"พิมพ์ชื่อไอเทมที่ต้องการ:\nGold  Copper  Iron")
-    
+
     root.destroy()
     if choice and choice in choices:
         return choice
@@ -104,18 +104,32 @@ def choose_item():
         print("เลือกไอเทมไม่ถูกต้อง หรือยกเลิก")
         return None
 
-# ตัวอย่างเรียกใช้งาน
-item = choose_item()
-item_name = item  # หรือ "Copper" หรือ "Iron"
+# 🔻 ลบการเรียก choose_item() ตรงนี้ออก
+# item = choose_item()
+# item_name = item
 
-# สร้างชื่อไฟล์ภาพแบบไดนามิก
+# ✅ ตั้งค่าเริ่มต้นไว้ก่อน
+item_name = "Copper"
 carname = f"{item_name}.png"
 selfname = f"scrap{item_name}.png"
 
+def choose_and_update_item():
+    item = choose_item()
+    if item:
+        global item_name, carname, selfname
+        item_name = item
+        carname = f"{item_name}.png"
+        selfname = f"scrap{item_name}.png"
+        print(f"✅ เปลี่ยนไอเทมเป็น: {item_name}")
+
 # ใช้ filename ใน locateOnScreen()
-scanning = False
+
 keyboard.add_hotkey('f5', lambda: start_scanning())
 keyboard.add_hotkey('f6', lambda: stop_scanning())
+keyboard.add_hotkey('f10', choose_and_update_item)
+
+scanning = False
+
 with mss.mss() as sct:
     while True:
         try:
@@ -152,6 +166,7 @@ with mss.mss() as sct:
                 pydirectinput.click()
                 pydirectinput.click()
                 time.sleep(3)
+                # print(carname)
                 location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 500))
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center.x, center.y)
@@ -166,6 +181,7 @@ with mss.mss() as sct:
                 pydirectinput.moveTo(952, 646)
                 pydirectinput.click()
                 time.sleep(0.05)
+                # print(selfname)
                 location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(349, 307, 500, 450))
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center.x, center.y)
