@@ -60,6 +60,28 @@ class Input_I(ctypes.Union):
 class Input(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong),
                 ("ii", Input_I)]
+
+class MOUSEINPUT(ctypes.Structure):
+    _fields_ = [("dx", ctypes.c_long),
+                ("dy", ctypes.c_long),
+                ("mouseData", ctypes.c_ulong),
+                ("dwFlags", ctypes.c_ulong),
+                ("time", ctypes.c_ulong),
+                ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))]
+
+class INPUT(ctypes.Structure):
+    class _INPUT(ctypes.Union):
+        _fields_ = [("mi", MOUSEINPUT)]
+    _anonymous_ = ("u",)
+    _fields_ = [("type", ctypes.c_ulong),
+                ("u", _INPUT)]
+
+def move_mouse_relative(dx, dy):
+    MOUSEEVENTF_MOVE = 0x0001
+    inp = INPUT()
+    inp.type = 0  # INPUT_MOUSE
+    inp.mi = MOUSEINPUT(dx, dy, 0, MOUSEEVENTF_MOVE, 0, None)
+    ctypes.windll.user32.SendInput(1, ctypes.byref(inp), ctypes.sizeof(inp))
     
 
 # Scan codes ของปุ่มที่ใช้
@@ -356,13 +378,18 @@ while True:
             PressKey(SHIFT)
     else:
         time.sleep(0.5)
-        PressKey(D)
-        PressKey(S)
+        move_mouse_relative(6000, 0)
+        # pydirectinput.moveTo(400, 519)
+        # PressKey(D)
+        # PressKey(S)
+        # PressKey(SHIFT)
+        time.sleep(0.05)
+        PressKey(W)
         PressKey(SHIFT)
         time.sleep(1.5)
-        ReleaseKey(D)
-        ReleaseKey(S)
-        ReleaseKey(SHIFT)
+        # ReleaseKey(D)
+        # ReleaseKey(S)
+        # ReleaseKey(SHIFT)
 
     # small_frame = cv2.resize(frame, (320, 240))
     # cv2.imshow("Rock Detector", small_frame)
