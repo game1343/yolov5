@@ -121,9 +121,9 @@ def choose_and_update_item():
 
 # ... โค้ดเดิมทั้งหมดของคุณด้านบนไม่ต้องแก้ ...
 
-keyboard.add_hotkey('f5', lambda: start_scanning())
-keyboard.add_hotkey('f6', lambda: stop_scanning())
-keyboard.add_hotkey('f10', choose_and_update_item)
+keyboard.add_hotkey('/', lambda: start_scanning())
+keyboard.add_hotkey('*', lambda: stop_scanning())
+keyboard.add_hotkey('+', choose_and_update_item)
 
 scanning = False
 
