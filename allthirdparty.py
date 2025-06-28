@@ -167,7 +167,7 @@ with mss.mss() as sct:
                 pydirectinput.click()
                 time.sleep(3)
                 # print(carname)
-                location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 500))
+                location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 550))
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center.x, center.y)
                 pydirectinput.mouseDown()
