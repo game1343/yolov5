@@ -11,7 +11,8 @@ import pydirectinput
 import tkinter as tk
 from tkinter import simpledialog
 import keyboard
-
+from tkinter import messagebox
+import threading
 # โหลดโมเดล
 
 # กำหนดชื่อหน้าต่างเกม
@@ -86,31 +87,42 @@ def stop_scanning(event=None):
 # ตัวแปรตรวจสอบ
 yolo_detected = True
 
-def choose_item():
+def choose_items():
+    def on_submit():
+        selected = [item for item, var in zip(items, vars) if var.get()]
+        if selected:
+            global item_name, carname, selfname
+            item_name = selected[0]  # เลือกอันแรกเป็นหลัก
+            carname = f"{item_name}.png"
+            selfname = f"scrap{item_name}.png"
+            print(f"✅ เลือกไอเทมที่จะเอาเข้าตู้: {item_name}")
+        else:
+            print("❌ ไม่ได้เลือกไอเทม")
+        root.destroy()
+
+    items = ["Gold", "Copper", "Iron", "scrapGold", "scrapCopper", "scrapIron"]
+
     root = tk.Tk()
-    root.withdraw()  # ซ่อนหน้าต่างหลัก
+    root.title("เลือกไอเทมที่จะเอาเข้าตู้")
+    vars = []
 
-    choices = ["Gold", "Copper", "Iron", "scrapGold", "scrapCopper", "scrapIron"]
-    choice = simpledialog.askstring("เลือกไอเทม", f"พิมพ์ชื่อไอเทมที่ต้องการ:\nGold  Copper  Iron  scrapGold  scrapCopper  scrapIron")
+    for item in items:
+        var = tk.BooleanVar()
+        chk = tk.Checkbutton(root, text=item, variable=var)
+        chk.pack(anchor='w')
+        vars.append(var)
 
-    root.destroy()
-    if choice and choice in choices:
-        return choice
-    else:
-        print("เลือกไอเทมไม่ถูกต้อง หรือยกเลิก")
-        return None
+    submit_btn = tk.Button(root, text="ตกลง", command=on_submit)
+    submit_btn.pack(pady=10)
 
-# 🔻 ลบการเรียก choose_item() ตรงนี้ออก
-# item = choose_item()
-# item_name = item
+    root.mainloop()
 
-# ✅ ตั้งค่าเริ่มต้นไว้ก่อน
 item_name = "Copper"
 carname = f"{item_name}.png"
 selfname = f"scrap{item_name}.png"
 
 def choose_and_update_item():
-    item = choose_item()
+    item = choose_items()
     if item:
         global item_name, carname
         item_name = item
@@ -121,11 +133,13 @@ def choose_and_update_item():
 
 # ... โค้ดเดิมทั้งหมดของคุณด้านบนไม่ต้องแก้ ...
 
-keyboard.add_hotkey('/', lambda: start_scanning())
-keyboard.add_hotkey('*', lambda: stop_scanning())
-keyboard.add_hotkey('+', choose_and_update_item)
+keyboard.add_hotkey('alt + 4', lambda: start_scanning())
+keyboard.add_hotkey('alt + 5', lambda: stop_scanning())
+keyboard.add_hotkey('alt + 6', choose_and_update_item)
 
 scanning = False
+
+choose_items()
 
 # ✅ แก้ indentation และเงื่อนไข scanning ให้ถูกต้อง
 while True:
@@ -175,52 +189,9 @@ while True:
             time.sleep(0.05)
             pydirectinput.click()
             pydirectinput.press('esc')
-            # time.sleep(0.1)
-                
-            # pydirectinput.click()
-            # pydirectinput.click()
-            # time.sleep(3)
-
-            # location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(808, 310, 800, 500))
-            # if location:
-            #     center = pyautogui.center(location)
-            #     pyautogui.moveTo(center.x, center.y)
-            #     pydirectinput.mouseDown()
-            #     time.sleep(0.2)
-            #     pydirectinput.moveTo(561, 574)
-            #     pydirectinput.mouseUp()
-            #     time.sleep(0.05)
-            #     pydirectinput.moveTo(1032, 594)
-            #     pydirectinput.click()
-            #     time.sleep(0.05)
-            #     pydirectinput.moveTo(952, 646)
-            #     pydirectinput.click()
-            #     time.sleep(0.05)
-
-            # location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(349, 307, 500, 450))
-            # if location:
-            #     center = pyautogui.center(location)
-            #     pyautogui.moveTo(center.x, center.y)
-            #     pydirectinput.mouseDown()
-            #     time.sleep(0.2)
-            #     pydirectinput.moveTo(1179, 571)
-            #     pydirectinput.mouseUp()
-            #     time.sleep(0.1)
-            #     pydirectinput.moveTo(1148, 553)
-            #     pydirectinput.mouseUp()
-            #     pydirectinput.moveTo(1032, 594)
-            #     pydirectinput.click()
-            #     pydirectinput.moveTo(952, 646)
-            #     pydirectinput.click()
-            #     pydirectinput.press('esc')
-            #     time.sleep(0.05)
-            #     pydirectinput.press('e')
-            #     time.sleep(1)
-            #     pydirectinput.moveTo(899, 639)
-            #     pydirectinput.click()
-            #     time.sleep(0.5)
-            #     pydirectinput.press('enter')
-
+            pass  
+        else:
+            time.sleep(0.1)
     except Exception as e:
         print("Error:", e)
         time.sleep(1)

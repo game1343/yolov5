@@ -90,36 +90,46 @@ def stop_scanning(event=None):
 # ตัวแปรตรวจสอบ
 yolo_detected = True
 
-def choose_item():
+def choose_items():
+    def on_submit():
+        selected = [item for item, var in zip(items, vars) if var.get()]
+        if selected:
+            global item_name, carname, selfname
+            item_name = selected[0]  # เลือกอันแรกเป็นหลัก
+            carname = f"{item_name}.png"
+            selfname = f"scrap{item_name}.png"
+            print(f"✅ เลือกไอเทม: {item_name}")
+        else:
+            print("❌ ไม่ได้เลือกไอเทม")
+        root.destroy()
+
+    items = ["Gold", "Copper", "Iron", "scrapGold", "scrapCopper", "scrapIron"]
+
     root = tk.Tk()
-    root.withdraw()  # ซ่อนหน้าต่างหลัก
+    root.title("เลือกไอเทมที่ต้องการโพ")
+    vars = []
 
-    choices = ["Gold", "Copper", "Iron"]
-    choice = simpledialog.askstring("เลือกไอเทม", f"พิมพ์ชื่อไอเทมที่ต้องการ:\nGold  Copper  Iron")
+    for item in items:
+        var = tk.BooleanVar()
+        chk = tk.Checkbutton(root, text=item, variable=var)
+        chk.pack(anchor='w')
+        vars.append(var)
 
-    root.destroy()
-    if choice and choice in choices:
-        return choice
-    else:
-        print("เลือกไอเทมไม่ถูกต้อง หรือยกเลิก")
-        return None
+    submit_btn = tk.Button(root, text="ตกลง", command=on_submit)
+    submit_btn.pack(pady=10)
 
-# 🔻 ลบการเรียก choose_item() ตรงนี้ออก
-# item = choose_item()
-# item_name = item
+    root.mainloop()
 
-# ✅ ตั้งค่าเริ่มต้นไว้ก่อน
 item_name = "Copper"
 carname = f"{item_name}.png"
 selfname = f"scrap{item_name}.png"
 
 def choose_and_update_item():
-    item = choose_item()
+    item = choose_items()
     if item:
-        global item_name, carname, selfname
+        global item_name, carname
         item_name = item
         carname = f"{item_name}.png"
-        selfname = f"scrap{item_name}.png"
         print(f"✅ เปลี่ยนไอเทมเป็น: {item_name}")
 
 # ใช้ filename ใน locateOnScreen()
@@ -129,6 +139,8 @@ keyboard.add_hotkey('f6', lambda: stop_scanning())
 keyboard.add_hotkey('f10', choose_and_update_item)
 
 scanning = False
+
+choose_items()
 
 with mss.mss() as sct:
     while True:
