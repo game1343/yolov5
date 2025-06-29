@@ -115,6 +115,8 @@ def listen_keys():
             is_running = False
 
 threading.Thread(target=listen_keys, daemon=True).start()
+key_thread = threading.Thread(target=listen_keys, daemon=True)
+key_thread.start()
 
 def PressKey(hexKeyCode):
     extra = ctypes.c_ulong(0)
