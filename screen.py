@@ -115,8 +115,6 @@ def listen_keys():
             is_running = False
 
 threading.Thread(target=listen_keys, daemon=True).start()
-key_thread = threading.Thread(target=listen_keys, daemon=True)
-key_thread.start()
 
 def PressKey(hexKeyCode):
     extra = ctypes.c_ulong(0)
@@ -262,8 +260,8 @@ while True:
         continue
     alert_crop = frame[y_min:y_max, x_min:x_max]  # พื้นที่เฉพาะที่ UI เตือนจะอยู่
     resultModelx = modelx(alert_crop[:, :, ::-1])
-    detections = resultModelx.xyxy[0]
-    for *box, conf, cls_id in detections:
+    alert_detections  = resultModelx.xyxy[0]
+    for *box, conf, cls_id in alert_detections :
         # if conf < 0.5:  
         #     continue
         x1, y1, x2, y2 = map(int, box)
@@ -274,14 +272,15 @@ while True:
         cv2.putText(alert_crop, label, (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         # แสดงผลลัพธ์หลังวาด
-    # cv2.imshow("modelx", alert_crop)
-    # set_always_on_top("modelx")
+    cv2.imshow("modelx", alert_crop)
+    set_always_on_top("modelx")
+    cv2.waitKey(1)
 
-    alert_detected = any(conf > 0.3 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.3 for *_, conf, _ in alert_detections )
 
     if alert_detected:
         print("🔴 พบการแจ้งเตือนในหน้าจอ (modelx)")
-        for *box, conf, cls in detections:
+        for *box, conf, cls in alert_detections :
             print(f"🟡 เจอ {modelx.names[int(cls)]} มั่นใจ {conf:.2f}")
         is_running = False
         ReleaseKey(W)
@@ -334,16 +333,16 @@ while True:
         continue
 
     results = model(frame)
-    detections = results.xyxy[0]
+    rock_detections = results.xyxy[0]
 
-    alert_detected = any(conf > 0.7 for *_, conf, _ in detections)
+    alert_detected = any(conf > 0.7 for *_, conf, _ in rock_detections)
 
     rocks = []
     center_x = frame.shape[1] // 2
     center_y = int(frame.shape[0] * 0.85)
 
     # คัดกรองเฉพาะวัตถุที่มั่นใจเกิน 0.6 แล้วเก็บข้อมูล
-    for *box, conf, cls in detections:
+    for *box, conf, cls in rock_detections:
         # if conf < 0.6:
         #     continue
         x1, y1, x2, y2 = map(int, box)
@@ -435,7 +434,10 @@ while True:
         ReleaseKey(SHIFT)
         move_mouse_relative(2000, 0)
         time.sleep(1)
-
+        PressKey(S)
+        PressKey(D)
+        PressKey(SHIFT)
+        time.sleep(1.5)
 
 
     # small_frame = cv2.resize(frame, (320, 240))
