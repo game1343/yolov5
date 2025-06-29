@@ -132,6 +132,22 @@ def ReleaseKey(hexKeyCode):
     x = Input(ctypes.c_ulong(1), ii_)
     SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
+keys_pressed = set()
+
+def press_keys(new_keys):
+    global keys_pressed
+    new_keys = set(new_keys)
+
+    # ปล่อยปุ่มที่ไม่ได้ใช้อีกแล้ว
+    for key in keys_pressed - new_keys:
+        ReleaseKey(key)
+
+    # กดเฉพาะปุ่มที่ยังไม่กด
+    for key in new_keys - keys_pressed:
+        PressKey(key)
+
+    keys_pressed = new_keys
+
 # --- โหลดโมเดล YOLO ---
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/rock-detect2/weights/best.pt')
 modelx = torch.hub.load('ultralytics/yolov5', 'custom', path='runs/train/full_alert_model5/weights/best.pt')
@@ -277,6 +293,7 @@ while True:
         ReleaseKey(A)
         ReleaseKey(D)
         ReleaseKey(SHIFT)
+        time.sleep(1)
         pydirectinput.press('h')
         pydirectinput.moveTo(589, 474)
         pydirectinput.click()
@@ -350,44 +367,76 @@ while True:
     cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
 
     # จุดและเส้นหนาไปยังหินที่ล็อก
-    if locked_rock:
-        _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
-        cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
-        cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
+    # if locked_rock:
+    #     _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
+    #     cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
+    #     cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
 
-    # ระบบควบคุมทิศทางเคลื่อนไปหาหิน
-    ReleaseKey(W)
-    ReleaseKey(A)
-    ReleaseKey(D)
-    ReleaseKey(SHIFT)
+    # # ระบบควบคุมทิศทางเคลื่อนไปหาหิน
+    # ReleaseKey(W)
+    # ReleaseKey(A)
+    # ReleaseKey(D)
+    # ReleaseKey(SHIFT)
+
+    # if locked_rock:
+    #     _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
+    #     offset_x = mid_x - center_x
+
+    #     if offset_x > 230:
+    #         PressKey(D)
+    #         PressKey(W)
+    #         PressKey(SHIFT)
+    #     elif offset_x < -230:
+    #         PressKey(A)
+    #         PressKey(W)
+    #         PressKey(SHIFT)
+    #     else:
+    #         PressKey(W)
+    #         PressKey(SHIFT)
+    # else:
+    #     move_mouse_relative(2000, 0)
 
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
         offset_x = mid_x - center_x
 
-        if offset_x > 230:
+        # ปล่อยทุกปุ่มก่อนเพื่อกันค้าง
+        ReleaseKey(W)
+        ReleaseKey(A)
+        ReleaseKey(D)
+        ReleaseKey(SHIFT)
+
+        # ระยะไกลมาก – หันตัวก่อน
+        if offset_x > 400:
             PressKey(D)
+            PressKey(SHIFT)
+        elif offset_x < -400:
+            PressKey(A)
+            PressKey(SHIFT)
+
+        # ระยะกลาง – เดินเฉียงเข้าไป
+        elif offset_x > 230:
             PressKey(W)
+            PressKey(D)
             PressKey(SHIFT)
         elif offset_x < -230:
-            PressKey(A)
             PressKey(W)
+            PressKey(A)
             PressKey(SHIFT)
+
+        # ใกล้ – เดินตรงเข้าไป
         else:
             PressKey(W)
             PressKey(SHIFT)
     else:
+        ReleaseKey(W)
+        ReleaseKey(A)
+        ReleaseKey(D)
+        ReleaseKey(SHIFT)
         move_mouse_relative(2000, 0)
-        # pydirectinput.moveTo(400, 519)
-        # PressKey(D)
-        # PressKey(S)
-        # PressKey(SHIFT)
-        # PressKey(W)
-        # PressKey(SHIFT)
-        # time.sleep(2)
-        # ReleaseKey(D)
-        # ReleaseKey(S)
-        # ReleaseKey(SHIFT)
+        time.sleep(1)
+
+
 
     # small_frame = cv2.resize(frame, (320, 240))
     # cv2.imshow("Rock Detector", small_frame)
