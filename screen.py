@@ -274,9 +274,9 @@ while True:
         cv2.putText(alert_crop, label, (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         # แสดงผลลัพธ์หลังวาด
-    cv2.imshow("modelx", alert_crop)
-    set_always_on_top("modelx")
-    cv2.waitKey(1)
+    # cv2.imshow("modelx", alert_crop)
+    # set_always_on_top("modelx")
+    # cv2.waitKey(1)
 
     alert_detected = any(conf > 0.3 for *_, conf, _ in alert_detections )
 
@@ -411,10 +411,13 @@ while True:
         if offset_x > 400:
             PressKey(D)
             PressKey(SHIFT)
+            time.sleep(0.1)
+            ReleaseKey(SHIFT)
         elif offset_x < -400:
             PressKey(A)
             PressKey(SHIFT)
-
+            time.sleep(0.1)
+            ReleaseKey(SHIFT)
         # ระยะกลาง – เดินเฉียงเข้าไป
         elif offset_x > 230:
             PressKey(W)
@@ -435,11 +438,13 @@ while True:
         ReleaseKey(D)
         ReleaseKey(SHIFT)
         move_mouse_relative(2000, 0)
-        time.sleep(1)
-        PressKey(S)
-        PressKey(D)
+        PressKey(W)
         PressKey(SHIFT)
-        time.sleep(1.5)
+        time.sleep(1)
+        # PressKey(S)
+        # PressKey(D)
+        # PressKey(SHIFT)
+        # time.sleep(1.5)
 
 
     # small_frame = cv2.resize(frame, (320, 240))
