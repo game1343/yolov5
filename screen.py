@@ -373,11 +373,6 @@ while True:
     #     cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
     #     cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
 
-    # # ระบบควบคุมทิศทางเคลื่อนไปหาหิน
-    # ReleaseKey(W)
-    # ReleaseKey(A)
-    # ReleaseKey(D)
-    # ReleaseKey(SHIFT)
 
     # if locked_rock:
     #     _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
