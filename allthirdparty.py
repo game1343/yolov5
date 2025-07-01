@@ -145,6 +145,15 @@ choose_items()
 with mss.mss() as sct:
     while True:
         try:
+            if keyboard.is_pressed('f5'):
+                start_scanning()
+                time.sleep(0.3)  # กันกดซ้ำ
+            if keyboard.is_pressed('f6'):
+                stop_scanning()
+                time.sleep(0.3)
+            if keyboard.is_pressed('f10'):
+                choose_and_update_item()
+                time.sleep(0.3)
             if not scanning:
                 time.sleep(0.1)
                 continue
@@ -173,7 +182,7 @@ with mss.mss() as sct:
             if len(detections) == 0 and yolo_detected:
                 # pyautogui.screenshot('zone_debug.png', region=(349, 307, 500, 450))
                 tap_key(H)
-                time.sleep(0.05)  # รอ 3 วิ เตรียมหน้าต่างเกม
+                time.sleep(0.1)  # รอ 3 วิ เตรียมหน้าต่างเกม
                 pydirectinput.moveTo(589, 474)
                 pydirectinput.click()
                 pydirectinput.click()
@@ -186,13 +195,13 @@ with mss.mss() as sct:
                 time.sleep(0.2)
                 pydirectinput.moveTo(561, 574)
                 pydirectinput.mouseUp()
-                time.sleep(0.05)
+                time.sleep(0.1)
                 pydirectinput.moveTo(1032, 594)
                 pydirectinput.click()
-                time.sleep(0.05)
+                time.sleep(0.1)
                 pydirectinput.moveTo(952, 646)
                 pydirectinput.click()
-                time.sleep(0.05)
+                time.sleep(1)
                 # print(selfname)
                 location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(349, 307, 500, 450))
                 center = pyautogui.center(location)
@@ -209,7 +218,7 @@ with mss.mss() as sct:
                 pydirectinput.moveTo(952, 646)
                 pydirectinput.click()
                 pydirectinput.press('esc')
-                time.sleep(0.05)
+                time.sleep(0.1)
                 pydirectinput.press('e')
                 time.sleep(1)
                 pydirectinput.moveTo(899, 639)
