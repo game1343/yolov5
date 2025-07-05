@@ -12,6 +12,9 @@ import keyboard
 import threading
 import pydirectinput
 import pyautogui
+import tkinter as tk
+from tkinter import simpledialog, Tk
+from tkinter import messagebox
 
 
 try:
@@ -168,7 +171,7 @@ window_title = "FiveM® by Cfx.re - WHAT UNIVERSAL Sponsored by [ HOSTIFY ]"
 
 def press_key_e():
     PressKey(E)
-    time.sleep(0.1)
+    time.sleep(0.2)
     ReleaseKey(E)
 
 
@@ -213,14 +216,32 @@ e_thread = threading.Thread(target=keep_pressing_e, daemon=True)
 e_thread.start()
 
 def choose_item():
-    choices = ["Gold", "Copper", "Iron"]
-    print("เลือกไอเทมที่ต้องการ: Gold / Copper / Iron")
-    choice = input("พิมพ์ชื่อไอเทม: ").strip()
-    if choice in choices:
-        return choice
-    else:
-        print("❌ เลือกไม่ถูกต้อง หรือไม่มีในรายการ")
-        return None
+    def on_submit():
+        selected_items = [item for item, var in zip(items, vars) if var.get()]
+        if selected_items:
+            selected[0] = selected_items[0]  # เลือกอันแรก
+            root.destroy()
+        else:
+            messagebox.showwarning("แจ้งเตือน", "กรุณาเลือกอย่างน้อย 1 ไอเทม")
+
+    items = ["Gold", "Copper", "Iron"]
+    selected = [None]
+
+    root = tk.Tk()
+    root.title("เลือกไอเทมที่จะเอาเข้าตู้")
+    vars = []
+
+    for item in items:
+        var = tk.BooleanVar()
+        chk = tk.Checkbutton(root, text=item, variable=var)
+        chk.pack(anchor='w')
+        vars.append(var)
+
+    submit_btn = tk.Button(root, text="ตกลง", command=on_submit)
+    submit_btn.pack(pady=10)
+
+    root.mainloop()
+    return selected[0]
 
 
 # ตัวอย่างเรียกใช้งาน
@@ -245,7 +266,7 @@ def choose_and_update_item():
     else:
         print("❌ ไม่ได้เปลี่ยนไอเทม")
 
-keyboard.add_hotkey('f10', choose_and_update_item)
+keyboard.add_hotkey('f10', lambda: threading.Thread(target=choose_and_update_item, daemon=True).start())
 
 x_min, y_min = 10, 680 
 x_max, y_max = 300, 750
@@ -306,7 +327,7 @@ while True:
         pydirectinput.click()
         time.sleep(4)
         try:
-            location = pyautogui.locateOnScreen(selfname, confidence=0.8, region=(808, 310, 900, 600))
+            location = pyautogui.locateOnScreen(selfname, confidence=0.9, region=(808, 310, 900, 600))
             if location is None:
                 print(f"❌ ไม่พบภาพ {selfname} แม้จะลด confidence")
                 # pyautogui.screenshot("debug_area.png", region=(808, 310, 900, 600))
@@ -414,11 +435,11 @@ while True:
             time.sleep(0.1)
             ReleaseKey(SHIFT)
         # ระยะกลาง – เดินเฉียงเข้าไป
-        elif offset_x > 230:
+        elif offset_x > 210:
             PressKey(W)
             PressKey(D)
             PressKey(SHIFT)
-        elif offset_x < -230:
+        elif offset_x < -210:
             PressKey(W)
             PressKey(A)
             PressKey(SHIFT)
