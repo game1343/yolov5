@@ -435,11 +435,11 @@ while True:
             time.sleep(0.1)
             ReleaseKey(SHIFT)
         # ระยะกลาง – เดินเฉียงเข้าไป
-        elif offset_x > 210:
+        elif offset_x > 220:
             PressKey(W)
             PressKey(D)
             PressKey(SHIFT)
-        elif offset_x < -210:
+        elif offset_x < -220:
             PressKey(W)
             PressKey(A)
             PressKey(SHIFT)
