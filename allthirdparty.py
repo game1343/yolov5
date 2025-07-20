@@ -103,7 +103,7 @@ def choose_items():
             print("❌ ไม่ได้เลือกไอเทม")
         root.destroy()
 
-    items = ["Gold", "Copper", "Iron", "scrapGold", "scrapCopper", "scrapIron"]
+    items = ["Gold", "Copper", "Iron"]
 
     root = tk.Tk()
     root.title("เลือกไอเทมที่ต้องการโพ")
@@ -136,7 +136,7 @@ def choose_and_update_item():
 
 keyboard.add_hotkey('f5', lambda: start_scanning())
 keyboard.add_hotkey('f6', lambda: stop_scanning())
-keyboard.add_hotkey('f10', choose_and_update_item)
+
 
 scanning = False
 

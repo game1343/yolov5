@@ -281,6 +281,27 @@ while True:
         print("can't find screen")
         time.sleep(1)
         continue
+    try:
+        found_exit = pyautogui.locateOnScreen("menu.png", confidence=0.8, region=(800, 372, 400, 400))
+        if found_exit:
+            print("🔴 พบรูปภาพที่ต้องปิด ESC")
+            pydirectinput.press('esc')
+            time.sleep(1)
+            continue  # หรือ break ถ้าต้องการหยุดโปรแกรมเลย
+    except Exception as e:
+        pyautogui.screenshot("debug_menu.png", region=(800, 372, 400, 400))
+        print(f"❌ เกิดข้อผิดพลาดตอนเช็ครูป menu.png: {e}")
+    try:
+        found_exit = pyautogui.locateOnScreen("star.png", confidence=0.9, region=(468, 377, 300, 300))
+        if found_exit:
+            print("🔴 พบรูปภาพที่ต้องปิด ESC")
+            pydirectinput.press('esc')
+            time.sleep(1)
+            continue  # หรือ break ถ้าต้องการหยุดโปรแกรมเลย
+    except Exception as e:
+        # pyautogui.screenshot("debug_area.png", region=(808, 310, 900, 600))
+        print(f"❌ เกิดข้อผิดพลาดตอนเช็ครูป star.png: {e}")
+
     alert_crop = frame[y_min:y_max, x_min:x_max]  # พื้นที่เฉพาะที่ UI เตือนจะอยู่
     resultModelx = modelx(alert_crop[:, :, ::-1])
     alert_detections  = resultModelx.xyxy[0]
@@ -326,6 +347,7 @@ while True:
         time.sleep(0.2)
         pydirectinput.click()
         time.sleep(4)
+        
         try:
             location = pyautogui.locateOnScreen(selfname, confidence=0.9, region=(808, 310, 900, 600))
             if location is None:
@@ -388,30 +410,6 @@ while True:
     # จุดกึ่งกลางจอ
     cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
 
-    # จุดและเส้นหนาไปยังหินที่ล็อก
-    # if locked_rock:
-    #     _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
-    #     cv2.circle(frame, (mid_x, mid_y), 7, (0, 255, 255), -1)
-    #     cv2.line(frame, (center_x, center_y), (mid_x, mid_y), (0, 255, 255), 3)
-
-
-    # if locked_rock:
-    #     _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
-    #     offset_x = mid_x - center_x
-
-    #     if offset_x > 230:
-    #         PressKey(D)
-    #         PressKey(W)
-    #         PressKey(SHIFT)
-    #     elif offset_x < -230:
-    #         PressKey(A)
-    #         PressKey(W)
-    #         PressKey(SHIFT)
-    #     else:
-    #         PressKey(W)
-    #         PressKey(SHIFT)
-    # else:
-    #     move_mouse_relative(2000, 0)
 
     if locked_rock:
         _, _, _, _, _, _, _, mid_x, mid_y = locked_rock
@@ -435,11 +433,11 @@ while True:
             time.sleep(0.1)
             ReleaseKey(SHIFT)
         # ระยะกลาง – เดินเฉียงเข้าไป
-        elif offset_x > 220:
+        elif offset_x > 215:
             PressKey(W)
             PressKey(D)
             PressKey(SHIFT)
-        elif offset_x < -220:
+        elif offset_x < -215:
             PressKey(W)
             PressKey(A)
             PressKey(SHIFT)

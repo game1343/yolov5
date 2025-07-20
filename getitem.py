@@ -150,7 +150,7 @@ while True:
             time.sleep(2)                # รอ 2 วินาที
             pydirectinput.keyUp('e')
             time.sleep(0.1)
-            pyautogui.screenshot('zone_debug.png', region=(969, 309, 800, 550))
+            # pyautogui.screenshot('zone_debug.png', region=(969, 309, 800, 550))
             # pyautogui.screenshot('zone_debug1.png', region=(188, 308, 800, 550))
             location = pyautogui.locateOnScreen(carname, confidence=0.8, region=(969, 309, 800, 550))
             center = pyautogui.center(location)
